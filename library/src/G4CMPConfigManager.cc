@@ -37,6 +37,7 @@
 // 20210910  G4CMP-272:  Add parameter to set number of downsampled Luke phonons
 // 20220921  G4CMP-319:  Add temperature setting for use with QP sensors.
 // 20221014  G4CMP-334:  Add maxLukePhonons to printout; show macro commands
+// 20230527  G4CMP-295:  Add parameters for minimum, maximum step length (mm)
 
 #include "G4CMPConfigManager.hh"
 #include "G4CMPConfigMessenger.hh"
@@ -88,7 +89,9 @@ G4CMPConfigManager::G4CMPConfigManager()
     hATrapIonMFP(getenv("G4CMP_HATRAPION_MFP")?strtod(getenv("G4CMP_HATRAPION_MFP"),0)*mm:DBL_MAX),
     temperature(getenv("G4CMP_TEMPERATURE")?strtod(getenv("G4CMP_TEMPERATURE"),0)*kelvin:0.),
     clearance(getenv("G4CMP_CLEARANCE")?strtod(getenv("G4CMP_CLEARANCE"),0)*mm:1e-6*mm),
-    stepScale(getenv("G4CMP_MIN_STEP")?strtod(getenv("G4CMP_MIN_STEP"),0):-1.),
+    stepScale(getenv("G4CMP_MIN_STEP_SCALE")?strtod(getenv("G4CMP_MIN_STEP_SCALE"),0):-1.),
+    minimumStep(getenv("G4CMP_MIN_STEP_MM")?strtod(getenv("G4CMP_MIN_STEP_MM"),0)*mm:-1.),
+    maximumStep(getenv("G4CMP_MAX_STEP_MM")?strtod(getenv("G4CMP_MAX_STEP_MM"),0)*mm:-1.),
     sampleEnergy(getenv("G4CMP_SAMPLE_ENERGY")?strtod(getenv("G4CMP_SAMPLE_ENERGY"),0):-1.),
     genPhonons(getenv("G4CMP_MAKE_PHONONS")?strtod(getenv("G4CMP_MAKE_PHONONS"),0):1.),
     genCharges(getenv("G4CMP_MAKE_CHARGES")?strtod(getenv("G4CMP_MAKE_CHARGES"),0):1.),
@@ -126,7 +129,8 @@ G4CMPConfigManager::G4CMPConfigManager(const G4CMPConfigManager& master)
     eATrapIonMFP(master.eATrapIonMFP), hDTrapIonMFP(master.hDTrapIonMFP),
     hATrapIonMFP(master.hATrapIonMFP),
     temperature(master.temperature), clearance(master.clearance), 
-    stepScale(master.stepScale), sampleEnergy(master.sampleEnergy), 
+    stepScale(master.stepScale), minimumStep(master.minimumStep),
+    maximumStep(master.maximumStep), sampleEnergy(master.sampleEnergy), 
     genPhonons(master.genPhonons), genCharges(master.genCharges), 
     lukeSample(master.lukeSample), combineSteps(master.combineSteps),
     EminPhonons(master.EminPhonons), EminCharges(master.EminCharges),
@@ -185,7 +189,9 @@ void G4CMPConfigManager::printConfig(std::ostream& os) const {
      << "\n/g4cmp/hATrapIonizationMFP " << hATrapIonMFP/mm << " mm\t# G4CMP_HATRAPION_MFP"
      << "\n/g4cmp/temperature " << temperature/kelvin << " K\t\t\t\t# G4CMP_TEMPERATURE"
      << "\n/g4cmp/clearance " << clearance/mm << " mm\t\t\t# G4CMP_CLEARANCE"
-     << "\n/g4cmp/minimumStep " << stepScale << "\t\t\t\t# G4CMP_MIN_STEP"
+     << "\n/g4cmp/stepScale " << stepScale << "\t\t\t\t# G4CMP_MIN_STEP_SCALE *DEPRECATED*"
+     << "\n/g4cmp/minimumStep " << minimumStep/mm << " mm\t\t\t# G4CMP_MIN_STEP_MM"
+     << "\n/g4cmp/maximumStep " << maximumStep/mm << " mm\t\t\t# G4CMP_MAX_STEP_MM"
      << "\n/g4cmp/samplingEnergy " << sampleEnergy << "\t\t\t# G4CMP_SAMPLE_ENERGY"
      << "\n/g4cmp/producePhonons " << genPhonons << "\t\t\t\t# G4CMP_MAKE_PHONONS"
      << "\n/g4cmp/produceCharges " << genCharges << "\t\t\t\t# G4CMP_MAKE_CHARGES"
