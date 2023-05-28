@@ -16,6 +16,7 @@
 // 20150112  Rename SetNewKinematics to FillParticleChange for clarity
 // 20150601  Inherit from new G4CMPVProcess
 // 20170806  Move ChargeCarrierTimeStep() to G4CMPProcessUtils
+// 20220412  G4CMP-295: Move EnergyStep() here from G4CMPTimeStepper
 
 #ifndef G4CMPVDriftProcess_h
 #define G4CMPVDriftProcess_h 1
@@ -39,6 +40,9 @@ public:
 				       G4ForceCondition* condition);
 
 protected:
+  // Step length in E-field needed to reach specified energy
+  G4double EnergyStep(G4double Efinal) const;
+
   // Fill ParticleChange energy and mass for charge carrier of given momentum
   void FillParticleChange(G4int ivalley, const G4ThreeVector& p);
 
