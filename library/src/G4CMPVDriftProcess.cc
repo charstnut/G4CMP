@@ -169,6 +169,9 @@ G4double G4CMPVDriftProcess::EnergyStep(G4double Efinal) const {
   // For electron, take into account oblique propagation for path length
   if (IsElectron()) {	
     G4ThreeVector valley = theLattice->GetValleyAxis(GetCurrentValley());
+    theLattice->RotateToSolid(valley);	// From lattice frame to local volume
+    RotateToGlobalDirection(valley);	// from local to global coordinates
+
     G4double costh = fabs(valley.dot(EField.unit()));
 
     if (verboseLevel>2) {
