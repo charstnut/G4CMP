@@ -147,22 +147,39 @@ G4CMPVDriftProcess::FillParticleChange(G4int ivalley, G4double Ekin,
 
 
 // Compute path length corresponding to energy gain up to Efile
+// NOTE:  Energy gain only happens in presence of electric field
 
 G4double G4CMPVDriftProcess::EnergyStep(G4double Efinal) const {
   const G4Track* trk = GetCurrentTrack();
 
-  // NOTE: Assumes particle travels along local field line
-  G4double EField = G4CMP::GetFieldAtPosition(*trk).mag();
-  if (EField <= 0.) return -1.;			// No field, no acceleration
-
   G4double Ekin = GetKineticEnergy(trk);
   if (Ekin > Efinal) return -1.;		// Already over threshold
+
+  G4ThreeVector EField = G4CMP::GetFieldAtPosition(*trk);
+  if (EField.mag() <= 0.) return -1.;		// No field, no acceleration
 
   if (verboseLevel>1) {
     G4cout << "G4CMPVDriftProcess::EnergyStep from " << Ekin/eV
 	   << " to " << Efinal/eV << " eV" << G4endl;
   }
 
-  // Add 20% rescaling to account for electron oblique propagation
-  return 1.2*(Efinal-Ekin)/EField;
+  // Estimate distance to gain energy assuming local field is constant
+  G4double distance = (Efinal-Ekin) / EField.mag();
+
+  // For electron, take into account oblique propagation for path length
+  if (IsElectron()) {	
+    G4ThreeVector valley = theLattice->GetValleyAxis(GetCurrentValley());
+    G4double costh = fabs(valley.dot(EField.unit()));
+
+    if (verboseLevel>2) {
+      G4cout << " electron: field is at cos(theta) " << costh << " to"
+	     << " current valley." << G4endl;
+    }
+
+    // Avoid singularity if field is perpendicular to valley
+    if (costh > 1e-3) distance /= costh;
+  }
+
+  // Add a fraction to get _past_ threshold, avoid Zeno's paradox
+  return 1.05*distance;
 }
