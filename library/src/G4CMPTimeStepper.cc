@@ -70,11 +70,18 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 // Return configured maximum step length, or DBL_MAX if not set
 
-G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
+G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track&, G4double,
 					   G4ForceCondition* cond) {
-  *cond = NotForced;
+  *cond = NotForced;		// Should we make this forced instead?
 
   G4double maxStep = G4CMPConfigManager::GetMaximumStep();
+
+  G4ThreadLocal static G4bool first=true;
+  if (verboseLevel>1 && first) {
+    G4cout << "G4CMPTimeStepper::GetMFP using maxStep " << maxStep << G4endl;
+    first = false;
+  }
+  
   return (maxStep>0. ? maxStep : DBL_MAX);
 }
 
@@ -82,7 +89,12 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 // At end of step, recompute kinematics; important for electrons
 
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
-						  const G4Step& /*aStep*/) {
+						  const G4Step& aStep) {
+  if (verboseLevel>1) {
+    G4cout << "G4CMPTimeStepper stepLen " << aStep.GetStepLength/mm << " mm"
+	   << G4endl;
+  }
+  
   aParticleChange.Initialize(aTrack);
 
   // Adjust mass and kinetic energy using end-of-step momentum
