@@ -134,8 +134,14 @@ G4VParticleChange* G4CMPLukeScattering::PostStepDoIt(const G4Track& aTrack,
   G4double kSound = lat->GetSoundSpeed() * mass / hbar_Planck;
 
   // Sanity check: this should have been done in MFP already
-  if (kmag <= kSound) return &aParticleChange;
-
+  if (kmag <= kSound) {
+    if (verboseLevel>1) {
+      G4cout << " kmag " << kmag << " < kSound " << kSound
+	     << ": No Luke emission!" << G4endl;
+    }
+    return &aParticleChange;
+  }
+  
   if (verboseLevel > 1) {
     G4cout << "p_global = " << GetGlobalMomentum(aTrack)
 	   << " p_mag " << GetGlobalMomentum(aTrack).mag() << G4endl

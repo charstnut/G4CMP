@@ -91,7 +91,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track&, G4double,
 G4VParticleChange* G4CMPTimeStepper::PostStepDoIt(const G4Track& aTrack,
 						  const G4Step& aStep) {
   if (verboseLevel>1) {
-    G4cout << "G4CMPTimeStepper stepLen " << aStep.GetStepLength/mm << " mm"
+    G4cout << "G4CMPTimeStepper stepLen " << aStep.GetStepLength()/mm << " mm"
 	   << G4endl;
   }
   
