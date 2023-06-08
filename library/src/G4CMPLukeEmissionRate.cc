@@ -11,6 +11,7 @@
 // 20170815  Drop call to LoadDataForTrack(); now handled in process.
 // 20170913  Check for electric field; compute "rate" to get up to Vsound
 // 20170917  Add interface for threshold identification
+// 20230607  Set threshold at 5xVsound to avoid "Zeno" effects.
 
 #include "G4CMPLukeEmissionRate.hh"
 #include "G4CMPGeometryUtils.hh"
@@ -55,7 +56,7 @@ G4double G4CMPLukeEmissionRate::Rate(const G4Track& aTrack) const {
 }
 
 
-// Energy threshold occurs at sound speed in material
+// Energy threshold occurs at twice sound speed in material
 
 G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
   const G4Track* trk = GetCurrentTrack();	// For convenience below
@@ -63,25 +64,25 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
   G4ThreeVector vtrk = GetLocalVelocityVector(trk);
   G4double vsound = theLattice->GetSoundSpeed();
   G4ThreeVector v_el = vsound * vtrk.unit();
-  G4double Esound = theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
+  G4double Ethresh = 5.*theLattice->MapV_elToEkin(GetValleyIndex(trk), v_el);
 
   if (verboseLevel>1) {
     G4cout << "G4CMPLukeEmissionRate::Threshold vtrk " << vtrk.mag()/(m/s)
-	   << " vsound " << vsound/(m/s) << " m/s Esound " << Esound/eV
+	   << " vsound " << vsound/(m/s) << " m/s Ethresh " << Ethresh/eV
 	   << " eV" << G4endl;
   }
 
-  // Thresholds or pseudothresholds at multiples of Esound
+  // Thresholds or pseudothresholds at multiples of Ethresh
   const G4double eStep = 25.;
-  G4double ratio = Eabove/Esound;
+  G4double ratio = Eabove/Ethresh;
   if (ratio > 1.) {
     ratio += (std::fmod(ratio,eStep)<0.95) ? 0. : eStep;  // Avoid Zeno paradox
     ratio = std::ceil(ratio/eStep) * eStep;
 
     if (verboseLevel>2) G4cout << " scaling by " << ratio << G4endl;
     
-    Esound *= ratio;
+    Ethresh *= ratio;
   }
 
-  return (Eabove < Esound) ? Esound : 0.;	// No thresholds above sound
+  return (Eabove < Ethresh) ? Ethresh : 0.;	// No thresholds above sound
 }
