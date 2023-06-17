@@ -95,32 +95,33 @@ G4CMPVDriftProcess::PostStepGetPhysicalInteractionLength(
 	   << " energyStep " << energyStep/mm << " mm" << G4endl;
   }
 
+  G4double useStep = trueLength;
+  // If threshold happens before desired step, override IL, #IL, step length
+  if (energyStep > 0. && energyStep < trueLength) {
+    if (verboseLevel > 2)
+      G4cout << " using threshold at " << energyStep/mm << " mm" << G4endl;
+    
+    useStep = energyStep;
+  }
+  
   // FIXME: What happens if energyStep < minLength?  Should we be
   //        just returning std::max() of the three?
 
   // If desired step is shorter than cutoff, force process now
-  if (minLength > 0. && trueLength < minLength) {
-    if (verboseLevel > 2)
-      G4cout << " trueLength shorter than minimum.  Forcing zero len" << G4endl;
-    
-    theNumberOfInteractionLengthLeft = 0.;	// Assert that we've reached end
-    return 0.;
+  if (minLength > 0. && useStep < minLength) {
+    if (verboseLevel > 2) {
+      G4cout << " step length " << useStep/mm << " mm shorter than minimum."
+	     << " Using minLength" << G4endl;
+    }
+
+    useStep = minLength;
   }
 
-  // If threshold happens before desired step, override IL, #IL, step length
-  if (energyStep > 0. && energyStep < trueLength) {
-    if (verboseLevel > 2)
-      G4cout << " using threshold found at " << energyStep/mm << " mm" << G4endl;
-    
-    theNumberOfInteractionLengthLeft = 1.;
-    currentInteractionLength = energyStep;
-    return energyStep;
-  }
 
   if (verboseLevel > 2)
-    G4cout << " returning trueLength " << trueLength/mm << " mm" << G4endl;
+    G4cout << " returning step length " << useStep/mm << " mm" << G4endl;
   
-  return trueLength;		// Nothing special, use Geant4 step length
+  return useStep;
 }
 
 
