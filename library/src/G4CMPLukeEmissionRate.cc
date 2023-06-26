@@ -72,17 +72,5 @@ G4double G4CMPLukeEmissionRate::Threshold(G4double Eabove) const {
 	   << " eV" << G4endl;
   }
 
-  // Thresholds or pseudothresholds at multiples of Ethresh
-  const G4double eStep = 25.;
-  G4double ratio = Eabove/Ethresh;
-  if (ratio > 1.) {
-    ratio += (std::fmod(ratio,eStep)<0.95) ? 0. : eStep;  // Avoid Zeno paradox
-    ratio = std::ceil(ratio/eStep) * eStep;
-
-    if (verboseLevel>2) G4cout << " scaling by " << ratio << G4endl;
-    
-    Ethresh *= ratio;
-  }
-
   return (Eabove < Ethresh) ? Ethresh : 0.;	// No thresholds above sound
 }
