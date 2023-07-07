@@ -69,6 +69,7 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 
 
 // Return configured maximum step length, or DBL_MAX if not set
+// NOTE: GPIL is overridden to return exactly this value, no random throw
 
 G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track&, G4double,
 					   G4ForceCondition* cond) {
