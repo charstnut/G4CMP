@@ -41,6 +41,8 @@
 //		need TimeStepper for energy-dependent calculation.
 // 20230527  Drop competitive MFP calculation; use this process to enforce
 //	       a maximum allowed step length, to support mass recalculation.
+// 20230730  Use momentum-dependent step length to deal with directional
+//	       changes in electric field.
 
 #include "G4CMPTimeStepper.hh"
 #include "G4CMPConfigManager.hh"
@@ -71,12 +73,15 @@ G4CMPTimeStepper::~G4CMPTimeStepper() {;}
 // Return configured maximum step length, or DBL_MAX if not set
 // NOTE: GPIL is overridden to return exactly this value, no random throw
 
-G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track&, G4double,
+G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
 					   G4ForceCondition* cond) {
   *cond = NotForced;		// Should we make this forced instead?
 
   G4double maxStep = G4CMPConfigManager::GetMaximumStep();
 
+  G4double p2scale = aTrack.GetMomentum().mag2()/(eV*eV);
+  maxStep *= std::max(p2scale, 1.);
+  
   G4ThreadLocal static G4bool first=true;
   if (verboseLevel>1 && first) {
     G4cout << "G4CMPTimeStepper::GetMFP using maxStep " << maxStep << G4endl;
