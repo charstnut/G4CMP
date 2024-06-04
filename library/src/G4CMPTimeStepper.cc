@@ -157,6 +157,7 @@ G4double G4CMPTimeStepper::GetMeanFreePath(const G4Track& aTrack, G4double,
   G4double trackP = aTrack.GetMomentum().mag()/eV;
   G4double genericmfp = std::max(1e-10*m * (trackP*trackP), 1e-10*m);
   G4double mfp = std::min({genericmfp, 1e-6*m, mfpFast, mfpLuke, mfpIV});
+  mfp = std::max({mfp, 1e-10*m});
 
   if (verboseLevel) {
     G4cout << GetProcessName() << (IsElectron()?" elec":" hole")
